@@ -71,7 +71,11 @@ jobs:
       - name: Download dependencies
         run: curl -L -o Runtime.tar.gz ${{ secrets.RUNTIME_DEPENDENCIES }}
       - name: Extract dependencies
-        run: tar -xzf Runtime.tar.gz -C out
+        run: |
+          mkdir out/Kinoko
+          cd out/Kinoko
+          tar -xzf ../Runtime.tar.gz -C out
+          cd ../../
       - name: Install packages
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
