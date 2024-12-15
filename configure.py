@@ -14,7 +14,7 @@ n = Writer(out_buf)
 
 file_extension = ''
 if sys.platform.startswith('win32'):
-    file_extension = '.exe'
+    file_extension = '.dll'
 
 n.variable('ninja_required_version', '1.3')
 n.newline()
@@ -46,6 +46,8 @@ common_ccflags = [
     '-Wno-delete-non-virtual-dtor',
     '-Wno-packed-bitfield-compat',
     '-Wsuggest-override',
+    '-shared',
+    '-fPIC',
 ]
 
 target_cflags = [
