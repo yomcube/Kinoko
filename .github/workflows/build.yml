@@ -62,14 +62,9 @@ jobs:
         with:
           python-version: "3.10"
       - name: Configure ninja
-        run: python3 configure.py
+        run: python3 configure.py "C:/msys2/mingw64/bin/g++.exe" --static
       - name: Compile
         run: ninja
-      - name: Copy DLLs
-        shell: cmd
-        run: |
-          copy "C:\msys64\usr\bin\msys-stdc++-6.dll" "out\libstdc++-6.dll"
-          copy "C:\msys64\usr\bin\msys-gcc_s-seh-1.dll" "out\libgcc_s_seh-1.dll"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
