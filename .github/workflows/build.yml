@@ -46,41 +46,36 @@ jobs:
     name: Build (Windows)
     runs-on: windows-2025
     timeout-minutes: 20
-    strategy:
-      matrix:
-        include:
-          - { sys: mingw64, env: x86_64 }
-          - { sys: mingw32, env: i686 }
     steps:
-      - name: Checkout (Push)
-        if: github.event_name == 'push'
-        uses: actions/checkout@v4
-      - name: Checkout (Pull Request)
-        if: github.event_name == 'pull_request_target'
-        uses: actions/checkout@v4
-        with:
-          ref: "refs/pull/${{ github.event.number }}/merge"
-          
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{matrix.sys}}
-          install: mingw-w64-${{matrix.env}}-gcc
-      
-      - name: Setup Ninja
-        uses: ashutoshvarma/setup-ninja@master
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Configure ninja
-        run: python3 configure.py "C:/msys64/${{matrix.sys}}/bin/g++.exe" --static
-      - name: Compile
-        run: ninja
+      #- name: Checkout (Push)
+      #  if: github.event_name == 'push'
+      #  uses: actions/checkout@v4
+      #- name: Checkout (Pull Request)
+      #  if: github.event_name == 'pull_request_target'
+      #  uses: actions/checkout@v4
+      #  with:
+      #    ref: "refs/pull/${{ github.event.number }}/merge"
+      #
+      #- name: Setup Ninja
+      #  uses: ashutoshvarma/setup-ninja@master
+      #- name: Install Python
+      #  uses: actions/setup-python@v5
+      #  with:
+      #    python-version: "3.10"
+      #- name: Configure ninja
+      #  run: python3 configure.py
+      #- name: Compile
+      #  run: ninja
+      - name: Copy DLLs
+        run: |
+          copy "C:\msys64\usr\bin\msys-2.0.dll" "out\msys-2.0.dll"
+          copy "C:\msys64\usr\bin\msys-stdc++-6.dll" "out\libstdc++-6.dll"
+          copy "C:\msys64\usr\bin\msys-gcc_s-seh-1.dll" "out\msys-gcc_s-seh-1.dll"
+          copy "C:\msys64\usr\bin\msys-gcc_s-seh-1.dll" "out\libgcc_s_seh-1.dll"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Kinoko-Win-${{matrix.env}}
+          name: Kinoko-Win-x64
           path: |
             out
             samples

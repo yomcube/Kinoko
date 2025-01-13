@@ -23,7 +23,7 @@ n.variable('builddir', 'build')
 n.variable('outdir', 'out')
 n.newline()
 
-n.variable('compiler', sys.argv[1] if len(sys.argv) > 1 else 'g++')
+n.variable('compiler', 'g++')
 n.newline()
 
 common_ccflags = [
@@ -38,7 +38,6 @@ common_ccflags = [
     '-isystem', 'source',
     '-isystem', 'vendor',
     '-isystem', 'build',
-    '-static' if (len(sys.argv) > 2 and sys.argv[2] == '--static') else '',
     '-std=c++23',
     '-Wall',
     '-Wdouble-promotion',
