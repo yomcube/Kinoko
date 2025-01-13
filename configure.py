@@ -38,6 +38,7 @@ common_ccflags = [
     '-isystem', 'source',
     '-isystem', 'vendor',
     '-isystem', 'build',
+    '-static'
     '-std=c++23',
     '-Wall',
     '-Wdouble-promotion',
