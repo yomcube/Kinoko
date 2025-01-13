@@ -68,10 +68,7 @@ jobs:
       #  run: ninja
       - name: Copy DLLs
         run: |
-          copy "C:\msys64\usr\bin\msys-2.0.dll" "out\msys-2.0.dll"
-          copy "C:\msys64\usr\bin\msys-stdc++-6.dll" "out\libstdc++-6.dll"
-          copy "C:\msys64\usr\bin\msys-gcc_s-seh-1.dll" "out\msys-gcc_s-seh-1.dll"
-          copy "C:\msys64\usr\bin\msys-gcc_s-seh-1.dll" "out\libgcc_s_seh-1.dll"
+          copy "C:\msys64\usr\bin\*.dll" "out"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
