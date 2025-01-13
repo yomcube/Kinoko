@@ -47,25 +47,25 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 20
     steps:
-      #- name: Checkout (Push)
-      #  if: github.event_name == 'push'
-      #  uses: actions/checkout@v4
-      #- name: Checkout (Pull Request)
-      #  if: github.event_name == 'pull_request_target'
-      #  uses: actions/checkout@v4
-      #  with:
-      #    ref: "refs/pull/${{ github.event.number }}/merge"
-      #
-      #- name: Setup Ninja
-      #  uses: ashutoshvarma/setup-ninja@master
-      #- name: Install Python
-      #  uses: actions/setup-python@v5
-      #  with:
-      #    python-version: "3.10"
-      #- name: Configure ninja
-      #  run: python3 configure.py
-      #- name: Compile
-      #  run: ninja
+      - name: Checkout (Push)
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+      - name: Checkout (Pull Request)
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@master
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Configure ninja
+        run: python3 configure.py
+      - name: Compile
+        run: ninja
       - name: Copy DLLs
         shell: cmd
         run: |
@@ -77,7 +77,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Kinoko-Win-x64
+          name: Kinoko-Win64
           path: |
             out
             samples
