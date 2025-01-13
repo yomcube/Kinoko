@@ -67,6 +67,7 @@ jobs:
       #- name: Compile
       #  run: ninja
       - name: Copy DLLs
+        shell: cmd
         run: |
           copy "C:\msys64\usr\bin\msys-2.0.dll" "out\msys-2.0.dll"
           copy "C:\msys64\usr\bin\msys-stdc++-6.dll" "out\libstdc++-6.dll"
