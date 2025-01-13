@@ -38,7 +38,6 @@ common_ccflags = [
     '-isystem', 'source',
     '-isystem', 'vendor',
     '-isystem', 'build',
-    '-static',
     '-std=c++23',
     '-Wall',
     '-Wdouble-promotion',
@@ -59,7 +58,9 @@ debug_cflags = [
     '-ggdb',
 ]
 
-common_ldflags = []
+common_ldflags = [
+    '-static-libgcc', '-static-libstdc++'
+]
 
 n.rule(
     'cc',
