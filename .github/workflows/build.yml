@@ -62,7 +62,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Configure ninja
-        run: python3 configure.py "C:\msys2\usr\bin\g++.exe" --static
+        run: python3 configure.py "C:/msys64/mingw64/bin/g++.exe" --static
       - name: Compile
         run: ninja
       - name: Upload artifact
