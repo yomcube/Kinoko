@@ -1,6 +1,7 @@
 #include "ObjectDirector.hh"
 
 #include "game/field/BoxColManager.hh"
+#include "game/field/ObjectDrivableDirector.hh"
 #include "game/field/obj/ObjectRegistry.hh"
 
 #include "game/kart/KartObject.hh"
@@ -15,6 +16,8 @@ void ObjectDirector::init() {
         obj->init();
         obj->calcModel();
     }
+
+    ObjectDrivableDirector::Instance()->init();
 }
 
 /// @addr{0x8082A8F4}
@@ -26,6 +29,8 @@ void ObjectDirector::calc() {
     for (auto *&obj : m_calcObjects) {
         obj->calcModel();
     }
+
+    ObjectDrivableDirector::Instance()->calc();
 }
 
 /// @addr{0x8082B0E8}
@@ -42,6 +47,10 @@ void ObjectDirector::addObject(ObjectCollidable *obj) {
         }
     }
 
+    m_objects.push_back(obj);
+}
+
+void ObjectDirector::addObjectNoImpl(ObjectNoImpl *obj) {
     m_objects.push_back(obj);
 }
 
@@ -91,32 +100,12 @@ size_t ObjectDirector::checkKartObjectCollision(Kart::KartObject *kartObj,
     return count;
 }
 
-const ObjectFlowTable &ObjectDirector::flowTable() const {
-    return m_flowTable;
-}
-
-const ObjectBase *ObjectDirector::collidingObject(size_t idx) const {
-    ASSERT(idx < m_collidingObjects.size());
-
-    return m_collidingObjects[idx];
-}
-
-Kart::Reaction ObjectDirector::reaction(size_t idx) const {
-    ASSERT(idx < m_reactions.size());
-
-    return m_reactions[idx];
-}
-
-const EGG::Vector3f &ObjectDirector::hitDepth(size_t idx) const {
-    ASSERT(idx < m_hitDepths.size());
-
-    return m_hitDepths[idx];
-}
-
 /// @addr{0x8082A784}
 ObjectDirector *ObjectDirector::CreateInstance() {
     ASSERT(!s_instance);
     s_instance = new ObjectDirector;
+
+    ObjectDrivableDirector::CreateInstance();
 
     s_instance->createObjects();
 
@@ -129,10 +118,8 @@ void ObjectDirector::DestroyInstance() {
     auto *instance = s_instance;
     s_instance = nullptr;
     delete instance;
-}
 
-ObjectDirector *ObjectDirector::Instance() {
-    return s_instance;
+    ObjectDrivableDirector::DestroyInstance();
 }
 
 /// @addr{0x8082A38C}
@@ -187,19 +174,41 @@ void ObjectDirector::createObjects() {
 ObjectBase *ObjectDirector::createObject(const System::MapdataGeoObj &params) {
     ObjectId id = static_cast<ObjectId>(params.id());
     switch (id) {
+    case ObjectId::WLWallGC:
+        return new ObjectWLWallGC(params);
     case ObjectId::DokanSFC:
         return new ObjectDokan(params);
     case ObjectId::OilSFC:
         return new ObjectOilSFC(params);
     case ObjectId::ParasolR:
         return new ObjectParasolR(params);
+    case ObjectId::Kuribo:
+        return new ObjectKuribo(params);
+    case ObjectId::WLFirebarGC:
+        return new ObjectFirebar(params);
+    case ObjectId::WLFireRingGC:
+        return new ObjectFireRing(params);
+    case ObjectId::PuchiPakkun:
+        return new ObjectPuchiPakkun(params);
+    case ObjectId::KinokoUd:
+        return new ObjectKinokoUd(params);
+    case ObjectId::KinokoBend:
+        return new ObjectKinokoBend(params);
+    case ObjectId::KinokoNm:
+        return new ObjectKinokoNm(params);
+    case ObjectId::Aurora:
+        return new ObjectAurora(params);
     // Non-specified objects are stock collidable objects by default
     // However, we need to specify an impl, so we don't use default
     case ObjectId::DummyPole:
     case ObjectId::CastleTree1c:
     case ObjectId::PalmTree:
     case ObjectId::DKtreeA64c:
+    case ObjectId::TownTreeDsc:
         return new ObjectCollidable(params);
+    case ObjectId::WLDokanGC:
+    case ObjectId::Mdush:
+        return new ObjectKCL(params);
     default:
         return new ObjectNoImpl(params);
     }

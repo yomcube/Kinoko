@@ -1,6 +1,7 @@
 #include "BoxColManager.hh"
 
 #include "game/field/obj/ObjectCollidable.hh"
+#include "game/field/obj/ObjectDrivable.hh"
 
 #include <numeric>
 
@@ -161,7 +162,7 @@ void BoxColManager::calc() {
             ++m_unitPool[upper.unitID].m_lowPointIdx;
             --m_unitPool[lower.unitID].m_lowPointIdx;
 
-            if (lower.highPoint > upper.highPoint) {
+            if (upper.highPoint > lower.highPoint) {
                 int k = upper.highPoint;
 
                 while (k > lower.highPoint && m_highPoints[k].minLowPoint == j - 1) {
@@ -184,8 +185,8 @@ ObjectCollidable *BoxColManager::getNextObject() {
 }
 
 /// @addr{0x80785EC4}
-void *BoxColManager::getNextDrivable() {
-    return getNextImpl(m_nextDrivableID, eBoxColFlag::Drivable);
+ObjectDrivable *BoxColManager::getNextDrivable() {
+    return reinterpret_cast<ObjectDrivable *>(getNextImpl(m_nextDrivableID, eBoxColFlag::Drivable));
 }
 
 /// @addr{0x80785F2C}
@@ -254,6 +255,24 @@ void BoxColManager::search(BoxColUnit *unit, const BoxColFlag &flag) {
 /// @addr{0x80786B14}
 void BoxColManager::search(f32 radius, const EGG::Vector3f &pos, const BoxColFlag &flag) {
     searchImpl(radius, pos, flag);
+    resetIterators();
+}
+
+/// @addr{0x80786E60}
+bool BoxColManager::isSphereInSpatialCache(f32 radius, const EGG::Vector3f &pos,
+        const BoxColFlag &flag) const {
+    if (m_cacheRadius == -1.0f) {
+        return false;
+    }
+
+    if (!m_cacheFlag.onAll(flag)) {
+        return false;
+    }
+
+    f32 radiusDiff = m_cacheRadius - radius;
+    EGG::Vector3f posDiff = pos - m_cachePoint;
+
+    return EGG::Mathf::abs(posDiff.x) <= radiusDiff && EGG::Mathf::abs(posDiff.z) <= radiusDiff;
 }
 
 /// @addr{0x807855DC}
@@ -333,7 +352,7 @@ BoxColUnit *BoxColManager::insert(f32 radius, f32 maxSpeed, const EGG::Vector3f 
     int lowPointIdx = 0;
     int i = m_unitCount;
 
-    do {
+    while (true) {
         int highSearch = highPointIdx + i;
         int lowSearch = lowPointIdx + i;
 
@@ -345,8 +364,12 @@ BoxColUnit *BoxColManager::insert(f32 radius, f32 maxSpeed, const EGG::Vector3f 
             lowPointIdx = lowSearch;
         }
 
+        if (i == 1) {
+            break;
+        }
+
         i = (i + 1) / 2;
-    } while (i > 1);
+    }
 
     unit.m_highPointIdx = highPointIdx;
     unit.m_lowPointIdx = lowPointIdx;
@@ -553,7 +576,7 @@ void BoxColManager::searchImpl(f32 radius, const EGG::Vector3f &pos, const BoxCo
     m_cacheFlag = flag;
 
     int i = m_unitCount - 1;
-    do {
+    while (true) {
         int highSearch = highPointIdx + i;
         int lowSearch = lowPointIdx + i;
         if (highSearch <= m_unitCount && zLow > m_highPoints[highSearch - 1].z) {
@@ -564,8 +587,12 @@ void BoxColManager::searchImpl(f32 radius, const EGG::Vector3f &pos, const BoxCo
             lowPointIdx = lowSearch;
         }
 
+        if (i == 1) {
+            break;
+        }
+
         i = (i + 1) / 2;
-    } while (i > 1);
+    }
 
     u8 minLowPoint = m_highPoints[highPointIdx].minLowPoint;
 

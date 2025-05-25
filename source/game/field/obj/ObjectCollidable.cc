@@ -10,18 +10,25 @@
 namespace Field {
 
 /// @addr{0x8081EFEC}
-ObjectCollidable::ObjectCollidable(const System::MapdataGeoObj &params) : ObjectBase(params) {}
+ObjectCollidable::ObjectCollidable(const System::MapdataGeoObj &params)
+    : ObjectBase(params), m_collision(nullptr) {}
 
 /// @addr{0x8067E384}
-ObjectCollidable::~ObjectCollidable() = default;
+ObjectCollidable::~ObjectCollidable() {
+    delete m_collision;
+}
 
 /// @addr{0x8081F0A0}
 void ObjectCollidable::load() {
+    loadGraphics();
+    loadAnims();
     createCollision();
 
     if (m_collision) {
         loadAABB(0.0f);
     }
+
+    loadRail();
 
     ObjectDirector::Instance()->addObject(this);
 }
@@ -81,27 +88,15 @@ void ObjectCollidable::processKartReactions(Kart::KartObject *kartObj,
     }
 }
 
-/// @addr{0x8068179C}
-Kart::Reaction ObjectCollidable::onCollision(Kart::KartObject * /*kartObj*/,
-        Kart::Reaction reactionOnKart, Kart::Reaction /*reactionOnObj*/,
-        const EGG::Vector3f & /*hitDepth*/) {
-    return reactionOnKart;
-}
-
 /// @addr{0x80681748}
 bool ObjectCollidable::checkCollision(ObjectCollisionBase *lhs, EGG::Vector3f &dist) {
     return lhs->check(*collision(), dist);
 }
 
-/// @addr{0x8068173C}
-const EGG::Vector3f &ObjectCollidable::getCollisionTranslation() const {
-    return EGG::Vector3f::zero;
-}
-
 /// @addr{0x8081F224}
 void ObjectCollidable::createCollision() {
     const auto &flowTable = ObjectDirector::Instance()->flowTable();
-    const auto *collisionSet = flowTable.set(flowTable.slot(m_id));
+    const auto *collisionSet = flowTable.set(flowTable.slot(id()));
 
     if (!collisionSet) {
         PANIC("Invalid object ID when creating primitive collision! ID: %d",
@@ -127,16 +122,6 @@ void ObjectCollidable::createCollision() {
                 static_cast<size_t>(m_id), parse<s16>(collisionSet->mode));
         break;
     }
-}
-
-/// @addr{0x806816B8}
-const EGG::Vector3f &ObjectCollidable::collisionCenter() const {
-    return EGG::Vector3f::zero;
-}
-
-/// @addr{0x80573518}
-ObjectCollisionBase *ObjectCollidable::collision() const {
-    return m_collision;
 }
 
 } // namespace Field

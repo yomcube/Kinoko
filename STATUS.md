@@ -4,12 +4,12 @@ Test Case                                                 | Frames      |     | 
 :-------------------------------------------------------- | :---------: | --- | :---------------------------
 [`lc-rta-1-08-733`](https://youtu.be/HPcvNS8QFVI)         | 4531 / 4531 | ✔️ |
 [`mmm-rta-1-15-273`](https://youtu.be/ozaXzEXFeHM)        | 4923 / 4923 | ✔️ |
-[`mg-rta-0-19-758`](https://youtu.be/ui01yrKCwa0)         | 628 / 1596  | ❌ | Mushroom
-[`mg-ng-rta-1-40-273`](https://youtu.be/8-0Xetey5xY)      | 877 / 6422  | ❌ | Mushroom
+[`mg-rta-0-19-758`](https://youtu.be/ui01yrKCwa0)         | 1596 / 1596 | ✔️ |
+[`mg-ng-rta-1-40-273`](https://youtu.be/8-0Xetey5xY)      | 6422 / 6422 | ✔️ |
 [`tf-rta-1-44-178`](https://youtu.be/2XWFuncJAGk)         | 743 / 6656  | ❌ | Moving road
 [`tf-ng-rta-1-49-039`](https://youtu.be/mqQa_1Cq1bw)      | 689 / 6947  | ❌ | Moving road
 [`mc-rta-0-46-553`](https://youtu.be/1F2xfHYrkXM)         | 3202 / 3202 | ✔️ |
-[`mc-ng-rta-1-20-357`](https://youtu.be/kG8PvG8K1ZA)      | 1222 / 4228 | ❌ | KMP
+[`mc-ng-rta-1-20-357`](https://youtu.be/kG8PvG8K1ZA)      | 4228 / 4228 | ✔️ |
 [`cm-rta-0-25-145`](https://youtu.be/F_RUQVghmuA)         | 1919 / 1919 | ✔️ |
 [`cm-ng-rta-1-55-264`](https://youtu.be/XxKG3IYWduE)      | 651 / 7320  | ❌ | KMP
 [`dks-rta-1-44-568`](https://youtu.be/b9hacHlifcw)        | 6679 / 6679 | ✔️ |
@@ -27,8 +27,8 @@ Test Case                                                 | Frames      |     | 
 [`mh-rta-1-42-872`](https://youtu.be/CellUlOYgnc)         | 6578 / 6578 | ✔️ |
 [`bc-rta-2-08-697`](https://youtu.be/1DEReKemoeI)         | 808 / 8126  | ❌ | KMP
 [`bc-ng-rta-2-20-001`](https://youtu.be/028nClzy7B4)      | 808 / 8803  | ❌ | KMP
-[`rr-rta-1-24-751`](https://youtu.be/dgNMHyFda14)         | 3194 / 5491 | ❌ | KMP
-[`rr-ng-rta-2-24-281`](https://youtu.be/O-BtWWsq82o)      | 1207 / 9060 | ❌ | KMP
+[`rr-rta-1-24-751`](https://youtu.be/dgNMHyFda14)         | 5491 / 5491 | ✔️ |
+[`rr-ng-rta-2-24-281`](https://youtu.be/O-BtWWsq82o)      | 9060 / 9060 | ✔️ |
 [`rpb-rta-0-59-978`](https://youtu.be/Z-lVl-7B-So)        | 1078 / 4007 | ❌ | Moving water
 [`rpb-ng-rta-1-12-656`](https://youtu.be/LujU0kJx-hU)     | 2491 / 4767 | ❌ | Moving water
 [`ryf-rta-0-58-648`](https://youtu.be/3IKzbmawUbk)        | 583 / 3927  | ❌ | Water

@@ -28,6 +28,7 @@ void KartPhysics::reset() {
     m_decayingExtraRot = EGG::Quatf::ident;
     m_instantaneousExtraRot = EGG::Quatf::ident;
     m_extraRot = EGG::Quatf::ident;
+    m_movingObjVel.setZero();
     m_pose = EGG::Matrix34f::ident;
     m_xAxis = EGG::Vector3f(m_pose[0, 0], m_pose[1, 0], m_pose[2, 0]);
     m_yAxis = EGG::Vector3f(m_pose[0, 1], m_pose[1, 1], m_pose[2, 1]);
@@ -64,75 +65,6 @@ void KartPhysics::calc(f32 dt, f32 maxSpeed, const EGG::Vector3f & /*scale*/, bo
 
     m_instantaneousStuntRot = EGG::Quatf::ident;
     m_instantaneousExtraRot = EGG::Quatf::ident;
-}
-
-void KartPhysics::setPos(const EGG::Vector3f &pos) {
-    m_pos = pos;
-}
-
-void KartPhysics::setVelocity(const EGG::Vector3f &vel) {
-    m_velocity = vel;
-}
-
-void KartPhysics::set_fc(f32 val) {
-    m_fc = val;
-}
-
-/// @addr{0x8059FC48}
-void KartPhysics::composeStuntRot(const EGG::Quatf &rot) {
-    m_instantaneousStuntRot *= rot;
-}
-
-/// @addr{0x8059FD0C}
-void KartPhysics::composeExtraRot(const EGG::Quatf &rot) {
-    m_instantaneousExtraRot *= rot;
-}
-
-/// @addr{0x8059FDD0}
-void KartPhysics::composeDecayingRot(const EGG::Quatf &rot) {
-    m_decayingStuntRot *= rot;
-}
-
-/// @addr{0x805A0410}
-void KartPhysics::clearDecayingRot() {
-    m_decayingStuntRot = EGG::Quatf::ident;
-    m_decayingExtraRot = EGG::Quatf::ident;
-}
-
-KartDynamics *KartPhysics::dynamics() {
-    return m_dynamics;
-}
-
-const KartDynamics *KartPhysics::dynamics() const {
-    return m_dynamics;
-}
-
-const EGG::Matrix34f &KartPhysics::pose() const {
-    return m_pose;
-}
-
-CollisionGroup *KartPhysics::hitboxGroup() {
-    return m_hitboxGroup;
-}
-
-const EGG::Vector3f &KartPhysics::xAxis() const {
-    return m_xAxis;
-}
-
-const EGG::Vector3f &KartPhysics::yAxis() const {
-    return m_yAxis;
-}
-
-const EGG::Vector3f &KartPhysics::zAxis() const {
-    return m_zAxis;
-}
-
-const EGG::Vector3f &KartPhysics::pos() const {
-    return m_pos;
-}
-
-f32 KartPhysics::fc() const {
-    return m_fc;
 }
 
 /// @addr{0x805A04A0}

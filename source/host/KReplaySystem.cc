@@ -64,7 +64,7 @@ void KReplaySystem::parseOptions(int argc, char **argv) {
             m_currentRawGhost = Abstract::File::Load(m_currentGhostFileName, m_currentRawGhostSize);
 
             if (m_currentRawGhostSize < System::RKG_HEADER_SIZE ||
-                    m_currentRawGhostSize > System::RKG_UNCOMPRESSED_INPUT_DATA_SECTION_SIZE) {
+                    m_currentRawGhostSize > sizeof(System::RawGhostFile)) {
                 PANIC("File cannot be a ghost! Check the file size.");
             }
 
@@ -93,10 +93,6 @@ void KReplaySystem::DestroyInstance() {
     auto *instance = s_instance;
     s_instance = nullptr;
     delete instance;
-}
-
-KReplaySystem *KReplaySystem::Instance() {
-    return static_cast<KReplaySystem *>(s_instance);
 }
 
 KReplaySystem::KReplaySystem()
@@ -152,12 +148,14 @@ bool KReplaySystem::success() const {
 
     const auto *raceManager = System::RaceManager::Instance();
     if (raceManager->stage() != System::RaceManager::Stage::FinishGlobal) {
+        m_sceneMgr->currentScene()->heap()->enableAllocation();
         reportFail("Race didn't finish");
         return false;
     }
 
     s32 desyncingTimerIdx = getDesyncingTimerIdx();
     if (desyncingTimerIdx != -1) {
+        m_sceneMgr->currentScene()->heap()->enableAllocation();
         std::string msg;
 
         const auto [correct, incorrect] = getDesyncingTimer(desyncingTimerIdx);

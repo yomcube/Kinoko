@@ -88,8 +88,14 @@ jobs:
     name: Format
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
+      - name: Checkout (Push)
+        if: github.event_name == 'push'
         uses: actions/checkout@v4
+      - name: Checkout (Pull Request)
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Download llvm
         run: wget https://apt.llvm.org/llvm.sh
       - name: Install clang-format
@@ -156,9 +162,9 @@ jobs:
         run: mkdir -p out/website/docs
       - uses: mattnotmitt/doxygen-action@v1
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: out/website/
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4

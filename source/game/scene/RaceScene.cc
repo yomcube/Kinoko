@@ -3,6 +3,7 @@
 #include "game/field/BoxColManager.hh"
 #include "game/field/CollisionDirector.hh"
 #include "game/field/ObjectDirector.hh"
+#include "game/field/RailManager.hh"
 #include "game/item/ItemDirector.hh"
 #include "game/kart/KartObjectManager.hh"
 #include "game/system/CourseMap.hh"
@@ -10,6 +11,8 @@
 #include "game/system/RaceConfig.hh"
 #include "game/system/RaceManager.hh"
 #include "game/system/ResourceManager.hh"
+
+#include <ScopeLock.hh>
 
 namespace Scene {
 
@@ -23,21 +26,66 @@ RaceScene::~RaceScene() = default;
 
 /// @addr{0x80554208}
 void RaceScene::createEngines() {
-    System::CourseMap::CreateInstance()->init();
-    System::RaceManager::CreateInstance();
-    Field::BoxColManager::CreateInstance();
-    Kart::KartObjectManager::CreateInstance();
-    Field::CollisionDirector::CreateInstance();
-    Item::ItemDirector::CreateInstance();
-    Field::ObjectDirector::CreateInstance();
+    {
+        ScopeLock<GroupID> lock(GroupID::Course);
+        System::CourseMap::CreateInstance()->init();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Race);
+        System::RaceManager::CreateInstance();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Object);
+        Field::BoxColManager::CreateInstance();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Kart);
+        Kart::KartObjectManager::CreateInstance();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Course);
+        Field::CollisionDirector::CreateInstance();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Item);
+        Item::ItemDirector::CreateInstance();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Object);
+        Field::RailManager::CreateInstance();
+        Field::ObjectDirector::CreateInstance();
+    }
 }
 
 /// @addr{0x8055472C}
 void RaceScene::initEngines() {
-    Kart::KartObjectManager::Instance()->init();
-    System::RaceManager::Instance()->init();
-    Item::ItemDirector::Instance()->init();
-    Field::ObjectDirector::Instance()->init();
+    {
+        ScopeLock<GroupID> lock(GroupID::Kart);
+        Kart::KartObjectManager::Instance()->init();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Race);
+        System::RaceManager::Instance()->init();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Item);
+        Item::ItemDirector::Instance()->init();
+    }
+
+    {
+        ScopeLock<GroupID> lock(GroupID::Object);
+        Field::ObjectDirector::Instance()->init();
+    }
+
+    m_heap->disableAllocation();
 }
 
 /// @addr{0x80554E6C}
@@ -58,6 +106,7 @@ void RaceScene::destroyEngines() {
     System::KPadDirector::Instance()->endGhostProxies();
     Kart::KartObjectManager::DestroyInstance();
     Field::ObjectDirector::DestroyInstance();
+    Field::RailManager::DestroyInstance();
     Field::CollisionDirector::DestroyInstance();
     Item::ItemDirector::DestroyInstance();
     Field::BoxColManager::DestroyInstance();
@@ -73,11 +122,16 @@ void RaceScene::configure() {
 
     raceCfg->initRace();
 
-    auto *commonArc = resMgr->load(0, nullptr);
-    appendResource(commonArc, 0);
+    // Normally, the resources are loaded into a specific archive heap
+    // For now, tag them with the resource group ID
+    {
+        ScopeLock<GroupID> lock(GroupID::Resource);
+        auto *commonArc = resMgr->load(0, nullptr);
+        appendResource(commonArc, 0);
 
-    auto *courseArc = resMgr->load(raceCfg->raceScenario().course);
-    appendResource(courseArc, 1);
+        auto *courseArc = resMgr->load(raceCfg->raceScenario().course);
+        appendResource(courseArc, 1);
+    }
 }
 
 /// @brief This is called on race shutdown in order to prep for the next race.

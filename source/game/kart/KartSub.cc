@@ -1,5 +1,6 @@
 #include "KartSub.hh"
 
+#include "game/kart/KartAction.hh"
 #include "game/kart/KartBody.hh"
 #include "game/kart/KartCollide.hh"
 #include "game/kart/KartMove.hh"
@@ -23,11 +24,13 @@ KartSub::~KartSub() {
     delete m_collide;
     delete m_state;
     delete m_move;
+    delete m_action;
 }
 
 /// @addr{0x80595D48}
 void KartSub::createSubsystems(bool isBike) {
     m_move = isBike ? new KartMoveBike : new KartMove;
+    m_action = new KartAction;
     m_move->createSubsystems();
     m_state = new KartState;
     m_collide = new KartCollide;
@@ -39,6 +42,7 @@ void KartSub::copyPointers(KartAccessor &pointers) {
     pointers.collide = m_collide;
     pointers.state = m_state;
     pointers.move = m_move;
+    pointers.action = m_action;
 }
 
 /// @addr{0x80595F78}
@@ -47,6 +51,7 @@ void KartSub::init() {
     body()->reset();
     m_state->init();
     move()->setTurnParams();
+    action()->init();
     m_collide->init();
 }
 
@@ -118,6 +123,7 @@ void KartSub::calcPass0() {
 
     state()->calcInput();
     move()->calc();
+    action()->calc();
 
     if (state()->isSkipWheelCalc()) {
         for (size_t tireIdx = 0; tireIdx < tireCount(); ++tireIdx) {
@@ -167,7 +173,9 @@ void KartSub::calcPass1() {
 
     state()->resetEjection();
 
+    m_movingObjCollisionCount = 0;
     m_floorCollisionCount = 0;
+    m_objVel.setZero();
     m_maxSuspOvertravel.setZero();
     m_minSuspOvertravel.setZero();
 
@@ -236,6 +244,7 @@ void KartSub::calcPass1() {
         }
 
         collide()->calcFloorEffect();
+        collide()->calcFloorMomentRate();
 
         if (colData.bFloor) {
             // Update floor count
@@ -268,9 +277,9 @@ void KartSub::calcPass1() {
         dynamics()->setPos(dynamics()->pos() + vehicleCompensation);
 
         if (!collisionData().bFloor) {
-            EGG::Vector3f relPos;
-            EGG::Vector3f vel;
-            EGG::Vector3f floorNrm;
+            EGG::Vector3f relPos = EGG::Vector3f::zero;
+            EGG::Vector3f vel = EGG::Vector3f::zero;
+            EGG::Vector3f floorNrm = EGG::Vector3f::zero;
             u32 count = 0;
 
             for (u16 wheelIdx = 0; wheelIdx < tireCount(); ++wheelIdx) {
@@ -309,6 +318,8 @@ void KartSub::calcPass1() {
 
     move()->setFloorCollisionCount(m_floorCollisionCount);
 
+    calcMovingObj();
+
     physics()->updatePose();
 
     collide()->resetHitboxes();
@@ -323,8 +334,13 @@ void KartSub::resizeAABB(f32 radiusScale) {
 }
 
 /// @addr{0x805980D8}
-void KartSub::addFloor(const CollisionData &, bool) {
+void KartSub::addFloor(const CollisionData &colData, bool) {
     ++m_floorCollisionCount;
+
+    if (colData.bHasRoadVel) {
+        ++m_movingObjCollisionCount;
+        m_objVel += colData.roadVelocity;
+    }
 }
 
 /// @addr{0x805979EC}
@@ -340,7 +356,7 @@ void KartSub::tryEndHWG() {
                 state()->isAllWheelsCollision()) {
             state()->setSoftWallDrift(false);
         } else if (state()->isTouchingGround()) {
-            if (componentXAxis().dot(EGG::Vector3f::ey) > 0.8f) {
+            if (EGG::Mathf::abs(componentXAxis().dot(EGG::Vector3f::ey)) > 0.8f) {
                 state()->setSoftWallDrift(false);
             }
         }
@@ -352,11 +368,20 @@ void KartSub::tryEndHWG() {
         }
     }
 
-    dynamics()->setForceUpright(!state()->isSoftWallDrift());
+    if (!state()->isInAction()) {
+        dynamics()->setForceUpright(!state()->isSoftWallDrift());
+    }
 }
 
-f32 KartSub::someScale() {
-    return m_someScale;
+/// @addr{0x80597A88}
+void KartSub::calcMovingObj() {
+    if (m_movingObjCollisionCount == 0) {
+        f32 scalar = state()->airtime() < 20 ? 1.0f : 0.9f;
+        physics()->composeDecayingMovingObjVel(0.7f, scalar, m_floorCollisionCount != 0);
+    } else {
+        m_objVel *= 1.0f / static_cast<f32>(m_floorCollisionCount);
+        physics()->composeMovingObjVel(m_objVel, 0.2f);
+    }
 }
 
 } // namespace Kart

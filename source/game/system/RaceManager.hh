@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game/system/KPadController.hh"
+#include "game/system/Random.hh"
 #include "game/system/map/MapdataCheckPoint.hh"
 #include "game/system/map/MapdataJugemPoint.hh"
 
@@ -28,13 +29,34 @@ public:
         [[nodiscard]] Timer getLapSplit(size_t idx) const;
 
         /// @beginGetters
-        [[nodiscard]] u16 checkpointId() const;
-        [[nodiscard]] f32 raceCompletion() const;
-        [[nodiscard]] s8 jugemId() const;
-        [[nodiscard]] const std::array<Timer, 3> &lapTimers() const;
-        [[nodiscard]] const Timer &lapTimer(size_t idx) const;
-        [[nodiscard]] const Timer &raceTimer() const;
-        [[nodiscard]] const KPad *inputs() const;
+        [[nodiscard]] u16 checkpointId() const {
+            return m_checkpointId;
+        }
+
+        [[nodiscard]] f32 raceCompletion() const {
+            return m_raceCompletion;
+        }
+
+        [[nodiscard]] s8 jugemId() const {
+            return m_jugemId;
+        }
+
+        [[nodiscard]] const std::array<Timer, 3> &lapTimers() const {
+            return m_lapTimers;
+        }
+
+        [[nodiscard]] const Timer &lapTimer(size_t idx) const {
+            ASSERT(idx < m_lapTimers.size());
+            return m_lapTimers[idx];
+        }
+
+        [[nodiscard]] const Timer &raceTimer() const {
+            return m_raceTimer;
+        }
+
+        [[nodiscard]] const KPad *inputs() const {
+            return m_inputs;
+        }
         /// @endGetters
 
     private:
@@ -75,24 +97,49 @@ public:
 
     void calc();
 
-    [[nodiscard]] bool isStageReached(Stage stage) const;
+    /// @addr{0x80536230}
+    [[nodiscard]] bool isStageReached(Stage stage) const {
+        return static_cast<std::underlying_type_t<Stage>>(m_stage) >=
+                static_cast<std::underlying_type_t<Stage>>(stage);
+    }
+
     [[nodiscard]] MapdataJugemPoint *jugemPoint() const;
 
     /// @beginGetters
-    [[nodiscard]] int getCountdownTimer() const;
-    [[nodiscard]] const Player &player() const;
-    [[nodiscard]] const TimerManager &timerManager() const;
-    [[nodiscard]] Stage stage() const;
+    /// @addr{0x80533090}
+    [[nodiscard]] int getCountdownTimer() const {
+        return STAGE_COUNTDOWN_DURATION - m_timer;
+    }
+
+    [[nodiscard]] const Player &player() const {
+        return m_player;
+    }
+
+    [[nodiscard]] const TimerManager &timerManager() const {
+        return m_timerManager;
+    }
+
+    [[nodiscard]] Stage stage() const {
+        return m_stage;
+    }
+
+    [[nodiscard]] u32 timer() const {
+        return m_timer;
+    }
     /// @endGetters
 
     static RaceManager *CreateInstance();
-    [[nodiscard]] static RaceManager *Instance();
     static void DestroyInstance();
+
+    [[nodiscard]] static RaceManager *Instance() {
+        return s_instance;
+    }
 
 private:
     RaceManager();
     ~RaceManager() override;
 
+    Random m_random;
     Player m_player;
     TimerManager m_timerManager;
     Stage m_stage;
@@ -100,6 +147,7 @@ private:
     u32 m_timer;
 
     static constexpr u16 STAGE_COUNTDOWN_DURATION = 240;
+    static constexpr u32 RNG_SEED = 0x74A1B095;
 
     static RaceManager *s_instance; ///< @addr{0x809BD730}
 };
